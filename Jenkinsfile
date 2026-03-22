@@ -6,7 +6,7 @@ pipeline {
     parameters {
         choice(
             name: 'BUILD_SCOPE',
-            choices: ['all', 'accounting', 'ad', 'cart', 'checkout', 'currency', 'email', 'flagd', 'flagd-ui', 'fraud-detection', 'frontend', 'frontend-proxy', 'grafana', 'image-provider', 'jaeger', 'kafka', 'load-generator', 'opensearch', 'otel-collector', 'payment', 'postgres', 'product-catalog', 'prometheus', 'quote', 'react-native-app', 'recommendation', 'shipping'],
+            choices: ['accounting', 'all', 'ad', 'cart', 'checkout', 'currency', 'email', 'flagd', 'flagd-ui', 'fraud-detection', 'frontend', 'frontend-proxy', 'grafana', 'image-provider', 'jaeger', 'kafka', 'load-generator', 'opensearch', 'otel-collector', 'payment', 'postgres', 'product-catalog', 'prometheus', 'quote', 'react-native-app', 'recommendation', 'shipping'],
             description: 'Select which microservice(s) to build and push out of 26 microservices'
         )
         string(
