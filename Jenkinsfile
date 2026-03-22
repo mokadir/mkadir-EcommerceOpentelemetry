@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        label 'jenkins-agent-msk-ubt-opt' 
+    }
 
     parameters {
         choice(
