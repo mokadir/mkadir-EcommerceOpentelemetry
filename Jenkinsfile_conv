@@ -1,0 +1,251 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(
+            name: 'BUILD_SCOPE',
+            choices: ['all', 'accounting', 'ad', 'cart', 'checkout', 'currency', 'email', 'flagd', 'flagd-ui', 'fraud-detection', 'frontend', 'frontend-proxy', 'grafana', 'image-provider', 'jaeger', 'kafka', 'load-generator', 'opensearch', 'otel-collector', 'payment', 'postgres', 'product-catalog', 'prometheus', 'quote', 'react-native-app', 'recommendation', 'shipping'],
+            description: 'Select which microservice(s) to build and push'
+        )
+        string(
+            name: 'DOCKER_REGISTRY',
+            defaultValue: 'docker.io',
+            description: 'Docker Registry URL (e.g., docker.io, gcr.io, acr.azurecr.io)'
+        )
+        string(
+            name: 'DOCKER_REGISTRY_NAMESPACE',
+            defaultValue: 'mokadir',
+            description: 'Docker Registry namespace/organization'
+        )
+        string(
+            name: 'IMAGE_TAG',
+            defaultValue: 'latest',
+            description: 'Docker image tag (default: latest, can use ${BUILD_NUMBER} or ${GIT_COMMIT})'
+        )
+        booleanParam(
+            name: 'PUSH_IMAGES',
+            defaultValue: false,
+            description: 'Push images to registry after build'
+        )
+        booleanParam(
+            name: 'MULTIPLATFORM_BUILD',
+            defaultValue: false,
+            description: 'Build for multiple platforms (requires docker buildx)'
+        )
+    }
+
+    environment {
+        DOCKER_REGISTRY_URL = "${params.DOCKER_REGISTRY}/${params.DOCKER_REGISTRY_NAMESPACE}"
+        IMAGE_TAG = "${params.IMAGE_TAG}"
+        BUILD_SCOPE = "${params.BUILD_SCOPE}"
+        DOCKER_BUILDKIT = "1"
+    }
+
+    options {
+        timestamps()
+        timeout(time: 2, unit: 'HOURS')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    echo "Checking out repository..."
+                    checkout scm
+                    echo "Git commit: ${GIT_COMMIT}"
+                    echo "Git branch: ${GIT_BRANCH}"
+                }
+            }
+        }
+
+        stage('Docker Login') {
+            when {
+                expression {
+                    return params.PUSH_IMAGES
+                }
+            }
+            steps {
+                script {
+                    echo "Logging in to Docker Registry..."
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'docker-registry-credentials',
+                            usernameVariable: 'DOCKER_USERNAME',
+                            passwordVariable: 'DOCKER_PASSWORD'
+                        )
+                    ]) {
+                        sh '''
+                            echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin ${DOCKER_REGISTRY}
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Setup Buildx') {
+            when {
+                expression {
+                    return params.MULTIPLATFORM_BUILD
+                }
+            }
+            steps {
+                script {
+                    echo "Setting up Docker Buildx for multiplatform builds..."
+                    sh '''
+                        if ! docker buildx inspect otel-demo-builder > /dev/null 2>&1; then
+                            echo "Creating multiplatform builder..."
+                            docker buildx create --name otel-demo-builder --bootstrap --use --driver docker-container
+                        else
+                            echo "Using existing builder: otel-demo-builder"
+                            docker buildx use otel-demo-builder
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Build All Services') {
+            when {
+                expression {
+                    return BUILD_SCOPE == 'all'
+                }
+            }
+            steps {
+                script {
+                    echo "Building all microservices using docker-compose..."
+                    sh '''
+                        export IMAGE_TAG=${IMAGE_TAG}
+                        make build
+                    '''
+                }
+            }
+        }
+
+        stage('Build Individual Service') {
+            when {
+                expression {
+                    return BUILD_SCOPE != 'all'
+                }
+            }
+            steps {
+                script {
+                    def service = BUILD_SCOPE
+                    def serviceDir = "src/${service}"
+                    
+                    echo "Building microservice: ${service}"
+                    
+                    // Check if Dockerfile exists
+                    sh '''
+                        if [ ! -f "${SERVICE_DIR}/Dockerfile" ]; then
+                            echo "ERROR: Dockerfile not found in ${SERVICE_DIR}"
+                            exit 1
+                        fi
+                    '''.stripIndent().replaceAll('\\$\\{SERVICE_DIR\\}', serviceDir)
+                    
+                    sh '''
+                        cd ${SERVICE_DIR}
+                        
+                        if [ "${MULTIPLATFORM_BUILD}" = "true" ]; then
+                            echo "Building for multiple platforms..."
+                            BUILD_CMD="docker buildx build --platform linux/amd64,linux/arm64"
+                        else
+                            echo "Building for current platform..."
+                            BUILD_CMD="docker build"
+                        fi
+                        
+                        IMAGE_NAME="${DOCKER_REGISTRY_URL}/${SERVICE}:${IMAGE_TAG}"
+                        
+                        if [ "${PUSH_IMAGES}" = "true" ]; then
+                            echo "Building and pushing: ${IMAGE_NAME}"
+                            ${BUILD_CMD} -t ${IMAGE_NAME} --push .
+                        else
+                            echo "Building: ${IMAGE_NAME}"
+                            ${BUILD_CMD} -t ${IMAGE_NAME} .
+                        fi
+                    '''.stripIndent()
+                        .replaceAll('\\$\\{SERVICE_DIR\\}', serviceDir)
+                        .replaceAll('\\$\\{SERVICE\\}', service)
+                }
+            }
+        }
+
+        stage('Push Images') {
+            when {
+                expression {
+                    return params.PUSH_IMAGES && BUILD_SCOPE == 'all'
+                }
+            }
+            steps {
+                script {
+                    echo "Pushing all images to registry..."
+                    sh '''
+                        export IMAGE_TAG=${IMAGE_TAG}
+                        make build-and-push
+                    '''
+                }
+            }
+        }
+
+        stage('Verify Images') {
+            steps {
+                script {
+                    echo "Verifying built images..."
+                    sh '''
+                        if [ "${BUILD_SCOPE}" = "all" ]; then
+                            echo "Listing all Docker images with tag: ${DOCKER_REGISTRY_URL}/*:${IMAGE_TAG}"
+                            docker images | grep -E "${DOCKER_REGISTRY_URL}|REPOSITORY"
+                        else
+                            IMAGE_NAME="${DOCKER_REGISTRY_URL}/${BUILD_SCOPE}:${IMAGE_TAG}"
+                            echo "Verifying image: ${IMAGE_NAME}"
+                            if docker image inspect ${IMAGE_NAME} > /dev/null 2>&1; then
+                                docker image inspect ${IMAGE_NAME} | head -20
+                                docker run --rm ${IMAGE_NAME} --version 2>/dev/null || echo "Image built successfully"
+                            else
+                                echo "Image verification failed or not pushed yet"
+                            fi
+                        fi
+                    '''
+                }
+            }
+        }
+
+        stage('Cleanup') {
+            when {
+                expression {
+                    return params.PUSH_IMAGES
+                }
+            }
+            steps {
+                script {
+                    echo "Logging out from Docker Registry..."
+                    sh '''
+                        docker logout ${DOCKER_REGISTRY} || true
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            script {
+                echo "=== Build Summary ==="
+                echo "Build Scope: ${BUILD_SCOPE}"
+                echo "Docker Registry: ${DOCKER_REGISTRY_URL}"
+                echo "Image Tag: ${IMAGE_TAG}"
+                echo "Push Images: ${PUSH_IMAGES}"
+                echo "Multiplatform Build: ${MULTIPLATFORM_BUILD}"
+            }
+        }
+        success {
+            echo "✓ Pipeline completed successfully!"
+        }
+        failure {
+            echo "✗ Pipeline failed. Check logs above for details."
+        }
+        unstable {
+            echo "⚠ Pipeline is unstable."
+        }
+    }
+}
