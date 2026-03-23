@@ -62,20 +62,13 @@ dependencies {
 // Default protoSourceDir is in /opentelemetry-demo/pb. Optionally override the
 // location for the docker build, which copies the protos to a different location.
 def protoSourceDir = findProperty('protoSourceDir')?: project.projectDir.parentFile.parentFile.toPath().toString() + "/pb"
-def protoDestDir = project.buildDir.toPath().toString() + "/proto"
 
-// Copy protos to the build directory
-tasks.register('copyProtos', Copy) {
-    from protoSourceDir
-    into protoDestDir
-}
-
-// Include the output directory of copyProtos in main source set so they are
+// Include the proto source directory in main source set so they are
 // picked up by the protobuf plugin
 sourceSets {
     main {
         proto {
-            srcDir(protoDestDir)
+            srcDir protoSourceDir
         }
     }
 }
