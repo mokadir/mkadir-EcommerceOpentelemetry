@@ -627,7 +627,7 @@ pipeline {
             steps {
                 script {
                     echo "🏗️  Building Docker images..."
-                    if (BUILD_SCOPE == 'all') {
+                    if (params.BUILD_SCOPE == 'all') {
                         if (params.MULTIPLATFORM_BUILD) {
                             // Build all services individually for multiplatform
                             def services = [
@@ -663,8 +663,11 @@ pipeline {
                             """
                         }
                     } else {
-                        def service = BUILD_SCOPE
+                        def service = params.BUILD_SCOPE
                         def serviceDir = "src/${service}"
+                        if (service == 'all') {
+                            error("BUILD_SCOPE 'all' should not reach this branch. Please check the pipeline logic.")
+                        }
                         if (params.MULTIPLATFORM_BUILD) {
                             sh """
                                 IMAGE_NAME="${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}"
