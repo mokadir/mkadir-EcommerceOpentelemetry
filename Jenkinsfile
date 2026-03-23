@@ -970,14 +970,13 @@ pipeline {
                 '''
             }
 
-            // Publish test results
-            junit allowEmptyResults: true, testResults: '**/test-results.xml,**/junit.xml'
+            // Publish test results (commented out as no tests generate junit.xml)
+            // junit allowEmptyResults: true, testResults: '**/test-results.xml,**/junit.xml'
 
-            // Publish coverage reports
-            publishCoverage adapters: [
-                coberturaAdapter('**/cobertura-coverage.xml'),
-                jacocoAdapter('**/jacoco.xml')
-            ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
+            // Publish coverage reports (commented out due to plugin availability)
+            // publishCoverage adapters: [
+            //     jacocoAdapter('**/jacoco.xml')
+            // ], sourceFileResolver: sourceFiles('STORE_LAST_BUILD')
         }
 
         success {
