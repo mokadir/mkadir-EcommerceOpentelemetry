@@ -642,7 +642,8 @@ pipeline {
 
                             services.each { service ->
                                 def serviceDir = "src/${service}"
-                                if (new File("${serviceDir}/Dockerfile").exists()) {
+                                def dockerfileExists = sh(script: "test -f ${serviceDir}/Dockerfile", returnStatus: true) == 0
+                                if (dockerfileExists) {
                                     sh """
                                         IMAGE_NAME="${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}"
 
@@ -671,7 +672,8 @@ pipeline {
 
                             services.each { service ->
                                 def serviceDir = "src/${service}"
-                                if (new File("${serviceDir}/Dockerfile").exists()) {
+                                def dockerfileExists = sh(script: "test -f ${serviceDir}/Dockerfile", returnStatus: true) == 0
+                                if (dockerfileExists) {
                                     sh """
                                         echo "Building image for ${service}..."
                                         docker build -f ${serviceDir}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} .
