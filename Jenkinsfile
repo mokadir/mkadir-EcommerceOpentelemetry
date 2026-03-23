@@ -660,9 +660,30 @@ pipeline {
                                 }
                             }
                         } else {
-                            sh """
-                                docker build -f src/${BUILD_SCOPE}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${BUILD_SCOPE}:${IMAGE_TAG} .
-                            """
+                            // Build all services without multiplatform
+                            def services = [
+                                'accounting', 'ad', 'cart', 'checkout', 'currency', 'email', 'flagd', 'flagd-ui',
+                                'fraud-detection', 'frontend', 'frontend-proxy', 'grafana', 'image-provider',
+                                'jaeger', 'kafka', 'load-generator', 'opensearch', 'otel-collector', 'payment',
+                                'postgres', 'product-catalog', 'prometheus', 'quote', 'react-native-app',
+                                'recommendation', 'shipping'
+                            ]
+
+                            services.each { service ->
+                                def serviceDir = "src/${service}"
+                                if (new File("${serviceDir}/Dockerfile").exists()) {
+                                    sh """
+                                        echo "Building image for ${service}..."
+                                        docker build -f ${serviceDir}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} .
+                                        
+                                        if [ "${PUSH_IMAGES}" = "true" ]; then
+                                            docker push ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}
+                                        fi
+                                    """
+                                } else {
+                                    echo "⚠️  Skipping ${service} - no Dockerfile found"
+                                }
+                            }
                         }
                     } else {
                         def service = buildScope
