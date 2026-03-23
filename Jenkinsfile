@@ -627,7 +627,9 @@ pipeline {
             steps {
                 script {
                     echo "🏗️  Building Docker images..."
-                    if (params.BUILD_SCOPE == 'all') {
+                    def buildScope = params.BUILD_SCOPE ?: 'all'
+                    echo "Effective BUILD_SCOPE: ${buildScope}"
+                    if (buildScope == 'all') {
                         if (params.MULTIPLATFORM_BUILD) {
                             // Build all services individually for multiplatform
                             def services = [
@@ -640,7 +642,7 @@ pipeline {
 
                             services.each { service ->
                                 def serviceDir = "src/${service}"
-                                if (fileExists("${serviceDir}/Dockerfile")) {
+                                if (new File("${serviceDir}/Dockerfile").exists()) {
                                     sh """
                                         IMAGE_NAME="${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}"
 
@@ -663,7 +665,7 @@ pipeline {
                             """
                         }
                     } else {
-                        def service = params.BUILD_SCOPE
+                        def service = buildScope
                         def serviceDir = "src/${service}"
                         if (service == 'all') {
                             error("BUILD_SCOPE 'all' should not reach this branch. Please check the pipeline logic.")
