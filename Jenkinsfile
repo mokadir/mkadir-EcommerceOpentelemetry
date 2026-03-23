@@ -642,16 +642,15 @@ pipeline {
                                 def serviceDir = "src/${service}"
                                 if (fileExists("${serviceDir}/Dockerfile")) {
                                     sh """
-                                        cd ${serviceDir}
                                         IMAGE_NAME="${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}"
 
                                         echo "Building multiplatform image for ${service}..."
                                         echo "Target platforms: ${BUILD_PLATFORMS}"
 
                                         if [ "${PUSH_IMAGES}" = "true" ]; then
-                                            docker buildx build --platform ${BUILD_PLATFORMS} -t \${IMAGE_NAME} --push .
+                                            docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} --push .
                                         else
-                                            docker buildx build --platform ${BUILD_PLATFORMS} -t \${IMAGE_NAME} .
+                                            docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} .
                                         fi
                                     """
                                 } else {
@@ -666,24 +665,23 @@ pipeline {
                         }
                     } else {
                         def service = BUILD_SCOPE
+                        def serviceDir = "src/${service}"
                         if (params.MULTIPLATFORM_BUILD) {
                             sh """
-                                cd src/${service}
                                 IMAGE_NAME="${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}"
 
                                 echo "Building multiplatform image for ${service}..."
                                 echo "Target platforms: ${BUILD_PLATFORMS}"
 
                                 if [ "${PUSH_IMAGES}" = "true" ]; then
-                                    docker buildx build --platform ${BUILD_PLATFORMS} -t \${IMAGE_NAME} --push .
+                                    docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} --push .
                                 else
-                                    docker buildx build --platform ${BUILD_PLATFORMS} -t \${IMAGE_NAME} .
+                                    docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} .
                                 fi
                             """
                         } else {
                             sh """
-                                cd src/${service}
-                                docker build -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} .
+                                docker build -f ${serviceDir}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} .
                             """
                         }
                     }
