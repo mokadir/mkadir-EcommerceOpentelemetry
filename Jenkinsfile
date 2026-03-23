@@ -651,9 +651,9 @@ pipeline {
                                         echo "Target platforms: ${BUILD_PLATFORMS}"
 
                                         if [ "${PUSH_IMAGES}" = "true" ]; then
-                                            docker buildx build --platform ${BUILD_PLATFORMS} -f Dockerfile -t \${IMAGE_NAME} --push ${serviceDir}
+                                            docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} --push ${serviceDir}
                                         else
-                                            docker buildx build --platform ${BUILD_PLATFORMS} -f Dockerfile -t \${IMAGE_NAME} ${serviceDir}
+                                            docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} ${serviceDir}
                                         fi
                                     """
                                 } else {
@@ -676,7 +676,7 @@ pipeline {
                                 if (dockerfileExists) {
                                     sh """
                                         echo "Building image for ${service}..."
-                                        docker build -f Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} ${serviceDir}
+                                        docker build -f ${serviceDir}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} ${serviceDir}
                                         
                                         if [ "${PUSH_IMAGES}" = "true" ]; then
                                             docker push ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}
@@ -701,14 +701,14 @@ pipeline {
                                 echo "Target platforms: ${BUILD_PLATFORMS}"
 
                                 if [ "${PUSH_IMAGES}" = "true" ]; then
-                                    docker buildx build --platform ${BUILD_PLATFORMS} -f Dockerfile -t \${IMAGE_NAME} --push ${serviceDir}
+                                    docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} --push ${serviceDir}
                                 else
-                                    docker buildx build --platform ${BUILD_PLATFORMS} -f Dockerfile -t \${IMAGE_NAME} ${serviceDir}
+                                    docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} ${serviceDir}
                                 fi
                             """
                         } else {
                             sh """
-                                docker build -f Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} ${serviceDir}
+                                docker build -f ${serviceDir}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} ${serviceDir}
                             """
                         }
                     }
