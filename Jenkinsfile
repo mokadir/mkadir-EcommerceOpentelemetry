@@ -658,10 +658,9 @@ pipeline {
                                 }
                             }
                         } else {
-                            sh '''
-                                export IMAGE_TAG=${IMAGE_TAG}
-                                make build
-                            '''
+                            sh """
+                                docker build -f src/${BUILD_SCOPE}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${BUILD_SCOPE}:${IMAGE_TAG} .
+                            """
                         }
                     } else {
                         def service = BUILD_SCOPE
