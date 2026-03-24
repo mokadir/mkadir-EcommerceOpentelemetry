@@ -4,10 +4,9 @@ mokadir/ad:latest                       2bbe208e37ae        499MB          143MB
 mokadir/checkout:latest                 7f0337cb4f24       44.1MB         12.2MB
 mokadir/currency:latest                 27b1356a30b6        133MB         28.3MB
 mokadir/email:latest                    b31906f40d26        316MB         85.5MB
-mokadir/flagd-ui:latest     
-: in build 20
-
+mokadir/flagd-ui:latest : all in build 20
 fraud-detection : 21
+cart : 23
 
 
 

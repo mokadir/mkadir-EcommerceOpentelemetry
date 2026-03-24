@@ -693,23 +693,28 @@ pipeline {
                         if (service == 'all') {
                             error("BUILD_SCOPE 'all' should not reach this branch. Please check the pipeline logic.")
                         }
-                        if (params.MULTIPLATFORM_BUILD) {
-                            sh """
-                                IMAGE_NAME="${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}"
+                        def dockerfileExists = sh(script: "test -f ${serviceDir}/Dockerfile", returnStatus: true) == 0
+                        if (dockerfileExists) {
+                            if (params.MULTIPLATFORM_BUILD) {
+                                sh """
+                                    IMAGE_NAME="${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG}"
 
-                                echo "Building multiplatform image for ${service}..."
-                                echo "Target platforms: ${BUILD_PLATFORMS}"
+                                    echo "Building multiplatform image for ${service}..."
+                                    echo "Target platforms: ${BUILD_PLATFORMS}"
 
-                                if [ "${PUSH_IMAGES}" = "true" ]; then
-                                    docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} --push .
-                                else
-                                    docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} .
-                                fi
-                            """
+                                    if [ "${PUSH_IMAGES}" = "true" ]; then
+                                        docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} --push .
+                                    else
+                                        docker buildx build --platform ${BUILD_PLATFORMS} -f ${serviceDir}/Dockerfile -t \${IMAGE_NAME} .
+                                    fi
+                                """
+                            } else {
+                                sh """
+                                    docker build -f ${serviceDir}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} .
+                                """
+                            }
                         } else {
-                            sh """
-                                docker build -f ${serviceDir}/Dockerfile -t ${DOCKER_REGISTRY_URL}/${service}:${IMAGE_TAG} .
-                            """
+                            echo "⚠️  Skipping ${service} - no Dockerfile found"
                         }
                     }
                 }
