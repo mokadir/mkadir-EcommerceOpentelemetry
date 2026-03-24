@@ -13,7 +13,13 @@ frontend-proxy : 27
 grafana : 27 [no image to build. there is readymade image]
 image-provider : 29
 jaeger :  [no image to build. there is readymade image]
-kafka : 
+kafka : 31
+load generator: 32
+open search : 33
+otel-collector :  [no image to build. there is readymade image]
+payment: 34
+postgres : 35
+product catalog: 36
 
 
 Last try and failed:
