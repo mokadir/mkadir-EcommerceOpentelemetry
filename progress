@@ -19,7 +19,8 @@ open search : 33
 otel-collector :  [no image to build. there is readymade image]
 payment: 34
 postgres : 35
-product catalog: 36
+product catalog: 37
+
 
 
 Last try and failed:
