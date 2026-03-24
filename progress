@@ -7,9 +7,13 @@ mokadir/email:latest                    b31906f40d26        316MB         85.5MB
 mokadir/flagd-ui:latest : all in build 20
 fraud-detection : 21
 cart : 23
-
-
-
+flagd : 25 [no image to build. there is readymade image]
+frontend : 26
+frontend-proxy : 27
+grafana : 27 [no image to build. there is readymade image]
+image-provider : 29
+jaeger :  [no image to build. there is readymade image]
+kafka : 
 
 
 Last try and failed:
