@@ -9,7 +9,7 @@
 FROM reactnativecommunity/react-native-android:v13.2.1 AS builder
 
 WORKDIR /reactnativesrc/
-COPY . .
+COPY src/react-native-app/ .
 
 RUN npm install
 WORKDIR android/
