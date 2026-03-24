@@ -19,8 +19,10 @@ open search : 33
 otel-collector :  [no image to build. there is readymade image]
 payment: 34
 postgres : 35
-product catalog: 37
-
+product catalog: 38
+prometheus :  [no image to build. there is readymade image]
+quote: 39
+react-native-app: 40
 
 
 Last try and failed:
