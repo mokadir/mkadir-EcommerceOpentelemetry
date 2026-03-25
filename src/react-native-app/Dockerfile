@@ -12,6 +12,7 @@ WORKDIR /reactnativesrc/
 COPY src/react-native-app/ .
 
 RUN npm install
+RUN npm install --no-save @react-native-community/cli-platform-android @react-native/cli-platform-android
 RUN ln -s /reactnativesrc/node_modules /reactnativesrc/android/node_modules
 
 WORKDIR /reactnativesrc/android
