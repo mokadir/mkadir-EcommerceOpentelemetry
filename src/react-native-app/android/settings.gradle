@@ -8,10 +8,22 @@ dependencyResolutionManagement {
   }
 }
 
-apply from: new File(["node", "--print", "require.resolve('expo/package.json')"].execute(null, rootDir).text.trim(), "../scripts/autolinking.gradle");
+def expoPkg = file("$rootDir/node_modules/expo/package.json")
+if (!expoPkg.exists()) {
+    throw new GradleException("Expo package not found in node_modules. Ensure 'npm install' was run and dependencies are present.")
+}
+apply from: new File(expoPkg.parentFile, "scripts/autolinking.gradle")
 useExpoModules()
 
-apply from: new File(["node", "--print", "require.resolve('@react-native-community/cli-platform-android/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim(), "../native_modules.gradle");
+// Support both old and new package names for CLI Android platform
+File cliPlatformAndroidPkg = file("$rootDir/node_modules/@react-native-community/cli-platform-android/package.json")
+if (!cliPlatformAndroidPkg.exists()) {
+    cliPlatformAndroidPkg = file("$rootDir/node_modules/@react-native/cli-platform-android/package.json")
+}
+if (!cliPlatformAndroidPkg.exists()) {
+    throw new GradleException("CLI platform android package not found under node_modules. Ensure dependencies include @react-native/cli-platform-android or @react-native-community/cli-platform-android.")
+}
+apply from: new File(cliPlatformAndroidPkg.parentFile, "../native_modules.gradle")
 applyNativeModulesSettingsGradle(settings)
 
 include ':app'
