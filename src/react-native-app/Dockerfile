@@ -12,7 +12,7 @@ WORKDIR /reactnativesrc/
 COPY src/react-native-app/ .
 
 RUN npm install
-ENV NODE_PATH=/reactnativesrc/node_modules
+RUN ln -s /reactnativesrc/node_modules /reactnativesrc/android/node_modules
 
 WORKDIR /reactnativesrc/android
 RUN chmod +x gradlew
