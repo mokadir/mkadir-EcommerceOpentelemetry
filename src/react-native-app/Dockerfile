@@ -12,8 +12,11 @@ WORKDIR /reactnativesrc/
 COPY src/react-native-app/ .
 
 RUN npm install
-RUN chmod +x android/gradlew
-RUN ./android/gradlew -p android assembleRelease
+ENV NODE_PATH=/reactnativesrc/node_modules
+
+WORKDIR /reactnativesrc/android
+RUN chmod +x gradlew
+RUN ./gradlew assembleRelease
 
 FROM scratch
 COPY --from=builder /reactnativesrc/android/app/build/outputs/apk/release/app-release.apk /reactnativeapp.apk
