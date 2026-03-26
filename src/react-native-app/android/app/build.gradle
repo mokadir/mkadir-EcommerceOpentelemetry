@@ -128,5 +128,21 @@ dependencies {
     }
 }
 
-apply from: new File(["node", "--print", "require.resolve('@react-native-community/cli-platform-android/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim(), "../native_modules.gradle");
+def cliPlatformAndroidPackageDir = file("$rootDir/node_modules/@react-native-community/cli-platform-android")
+if (!cliPlatformAndroidPackageDir.exists()) {
+    cliPlatformAndroidPackageDir = file("$rootDir/node_modules/@react-native/cli-platform-android")
+}
+if (!cliPlatformAndroidPackageDir.exists()) {
+    throw new GradleException("Could not locate cli-platform-android package in node_modules for native modules.")
+}
+
+def nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir, "native_modules.gradle")
+if (!nativeModulesAppBuildGradle.exists()) {
+    nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir.parentFile, "native_modules.gradle")
+}
+if (!nativeModulesAppBuildGradle.exists()) {
+    throw new GradleException("Could not find native_modules.gradle for app build in cli-platform-android module path.")
+}
+
+apply from: nativeModulesAppBuildGradle
 applyNativeModulesAppBuildGradle(project)

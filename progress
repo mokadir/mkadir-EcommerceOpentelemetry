@@ -27,8 +27,9 @@ quote: 39
 
 
 Last try and failed:
-react-native-app: 43
+react-native-app: 48
+
 recommendation: 
 shipping: 
 
-
+changed dockerfile already. so build first
