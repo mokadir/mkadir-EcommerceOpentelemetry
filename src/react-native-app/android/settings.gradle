@@ -27,11 +27,12 @@ def nativeModulesGradleFile = new File(cliPlatformAndroidPkg.parentFile, "native
 if (!nativeModulesGradleFile.exists()) {
     nativeModulesGradleFile = new File(cliPlatformAndroidPkg.parentFile.parentFile, "native_modules.gradle")
 }
-if (!nativeModulesGradleFile.exists()) {
-    throw new GradleException("Could not find native_modules.gradle in cli-platform-android package or parent module. Ensure correct dependency version is installed.")
+if (nativeModulesGradleFile.exists()) {
+    apply from: nativeModulesGradleFile
+    applyNativeModulesSettingsGradle(settings)
+} else {
+    logger.warn("native_modules.gradle not found in cli-platform-android package; skipping auto-linking settings. This may be acceptable for Expo managed modules in CI.")
 }
-apply from: nativeModulesGradleFile
-applyNativeModulesSettingsGradle(settings)
 
 include ':app'
 includeBuild(new File(["node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })"].execute(null, rootDir).text.trim()).getParentFile())

@@ -140,9 +140,9 @@ def nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir, "native
 if (!nativeModulesAppBuildGradle.exists()) {
     nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir.parentFile, "native_modules.gradle")
 }
-if (!nativeModulesAppBuildGradle.exists()) {
-    throw new GradleException("Could not find native_modules.gradle for app build in cli-platform-android module path.")
+if (nativeModulesAppBuildGradle.exists()) {
+    apply from: nativeModulesAppBuildGradle
+    applyNativeModulesAppBuildGradle(project)
+} else {
+    logger.warn("native_modules.gradle not found for app build; skipping applyNativeModulesAppBuildGradle. This may be acceptable for Expo managed modules in CI.")
 }
-
-apply from: nativeModulesAppBuildGradle
-applyNativeModulesAppBuildGradle(project)
