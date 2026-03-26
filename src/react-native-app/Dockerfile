@@ -17,6 +17,7 @@ RUN ln -s /reactnativesrc/node_modules /reactnativesrc/android/node_modules
 
 WORKDIR /reactnativesrc/android
 RUN chmod +x gradlew
+RUN mkdir -p build/generated/autolinking && echo '{"dependencies":[]}' > build/generated/autolinking/autolinking.json
 RUN ./gradlew assembleRelease
 
 FROM scratch
