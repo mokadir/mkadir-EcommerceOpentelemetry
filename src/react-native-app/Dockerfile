@@ -14,6 +14,7 @@ COPY src/react-native-app/ .
 RUN npm install
 RUN npm install --no-save @react-native-community/cli-platform-android
 RUN ln -s /reactnativesrc/node_modules /reactnativesrc/android/node_modules
+RUN yes | sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
 WORKDIR /reactnativesrc/android
 RUN chmod +x gradlew

@@ -106,6 +106,10 @@ gradle.projectsEvaluated {
 }
 
 dependencies {
+    if (findProject(':expo') != null) {
+        implementation(project(':expo'))
+    }
+
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
@@ -138,17 +142,17 @@ def cliPlatformAndroidPackageDir = file("$rootDir/node_modules/@react-native-com
 if (!cliPlatformAndroidPackageDir.exists()) {
     cliPlatformAndroidPackageDir = file("$rootDir/node_modules/@react-native/cli-platform-android")
 }
-if (!cliPlatformAndroidPackageDir.exists()) {
-    throw new GradleException("Could not locate cli-platform-android package in node_modules for native modules.")
-}
-
-def nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir, "native_modules.gradle")
-if (!nativeModulesAppBuildGradle.exists()) {
-    nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir.parentFile, "native_modules.gradle")
-}
-if (nativeModulesAppBuildGradle.exists()) {
-    apply from: nativeModulesAppBuildGradle
-    applyNativeModulesAppBuildGradle(project)
+if (cliPlatformAndroidPackageDir.exists()) {
+    def nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir, "native_modules.gradle")
+    if (!nativeModulesAppBuildGradle.exists()) {
+        nativeModulesAppBuildGradle = new File(cliPlatformAndroidPackageDir.parentFile, "native_modules.gradle")
+    }
+    if (nativeModulesAppBuildGradle.exists()) {
+        apply from: nativeModulesAppBuildGradle
+        applyNativeModulesAppBuildGradle(project)
+    } else {
+        logger.warn("native_modules.gradle not found for app build; skipping applyNativeModulesAppBuildGradle. This may be acceptable for Expo managed modules in CI.")
+    }
 } else {
-    logger.warn("native_modules.gradle not found for app build; skipping applyNativeModulesAppBuildGradle. This may be acceptable for Expo managed modules in CI.")
+    logger.warn("cli-platform-android package not found; skipping applyNativeModulesAppBuildGradle for app module.")
 }
