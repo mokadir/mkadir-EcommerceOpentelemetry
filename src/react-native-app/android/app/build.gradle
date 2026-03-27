@@ -79,6 +79,12 @@ android {
     }
 }
 
+gradle.projectsEvaluated {
+    tasks.matching { it.name == 'generateAutolinkingPackageList' }.configureEach {
+        enabled = false
+    }
+}
+
 // Apply static values from `gradle.properties` to the `android.packagingOptions`
 // Accepts values in comma delimited lists, example:
 // android.packagingOptions.pickFirsts=/LICENSE,**/picasa.ini

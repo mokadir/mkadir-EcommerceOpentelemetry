@@ -21,18 +21,19 @@ File cliPlatformAndroidPkg = file("$rootDir/node_modules/@react-native-community
 if (!cliPlatformAndroidPkg.exists()) {
     cliPlatformAndroidPkg = file("$rootDir/node_modules/@react-native/cli-platform-android/package.json")
 }
-if (!cliPlatformAndroidPkg.exists()) {
-    throw new GradleException("CLI platform android package not found under node_modules. Ensure dependencies include @react-native/cli-platform-android or @react-native-community/cli-platform-android.")
-}
-def nativeModulesGradleFile = new File(cliPlatformAndroidPkg.parentFile, "native_modules.gradle")
-if (!nativeModulesGradleFile.exists()) {
-    nativeModulesGradleFile = new File(cliPlatformAndroidPkg.parentFile.parentFile, "native_modules.gradle")
-}
-if (nativeModulesGradleFile.exists()) {
-    apply from: nativeModulesGradleFile
-    applyNativeModulesSettingsGradle(settings)
+if (cliPlatformAndroidPkg.exists()) {
+    def nativeModulesGradleFile = new File(cliPlatformAndroidPkg.parentFile, "native_modules.gradle")
+    if (!nativeModulesGradleFile.exists()) {
+        nativeModulesGradleFile = new File(cliPlatformAndroidPkg.parentFile.parentFile, "native_modules.gradle")
+    }
+    if (nativeModulesGradleFile.exists()) {
+        apply from: nativeModulesGradleFile
+        applyNativeModulesSettingsGradle(settings)
+    } else {
+        logger.warn("native_modules.gradle not found in cli-platform-android package; skipping auto-linking settings. This may be acceptable for Expo managed modules in CI.")
+    }
 } else {
-    logger.warn("native_modules.gradle not found in cli-platform-android package; skipping auto-linking settings. This may be acceptable for Expo managed modules in CI.")
+    logger.warn("CLI platform android package not found under node_modules; skipping native module autolinking settings.")
 }
 
 include ':app'
