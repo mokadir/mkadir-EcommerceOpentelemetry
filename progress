@@ -22,14 +22,15 @@ postgres : 35
 product catalog: 38
 prometheus :  [no image to build. there is readymade image]
 quote: 39
-
+shipping: 53
 
 
 
 Last try and failed:
-react-native-app: 48
-
-recommendation: 
-shipping: 
-
+react-native-app: 
 changed dockerfile already. so build first
+
+recommendation: 52 failed. get the error from the build
+
+
+
