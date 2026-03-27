@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 COPY src/recommendation/requirements.txt ./
 
-RUN pip install --upgrade pip
+RUN pip install --upgrade pip setuptools
 RUN pip install -r requirements.txt
 
 COPY src/recommendation/ .

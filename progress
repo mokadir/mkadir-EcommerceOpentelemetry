@@ -23,12 +23,7 @@ product catalog: 38
 prometheus :  [no image to build. there is readymade image]
 quote: 39
 shipping: 53
-
-
-
-Last try and failed:
-react-native-app: 
-take the error from build 61
+react-native-app: 62
 
 recommendation: 52 failed. get the error from the build
 
