@@ -9,11 +9,12 @@ dependencyResolutionManagement {
 }
 
 def expoPkg = file("$rootDir/node_modules/expo/package.json")
-if (!expoPkg.exists()) {
-    throw new GradleException("Expo package not found in node_modules. Ensure 'npm install' was run and dependencies are present.")
+if (expoPkg.exists()) {
+    apply from: new File(expoPkg.parentFile, "scripts/autolinking.gradle")
+    useExpoModules()
+} else {
+    logger.warn("Expo package not found in node_modules - skipping Expo autolinking (run npm install if building locally)")
 }
-apply from: new File(expoPkg.parentFile, "scripts/autolinking.gradle")
-useExpoModules()
 
 // Support both old and new package names for CLI Android platform
 File cliPlatformAndroidPkg = file("$rootDir/node_modules/@react-native-community/cli-platform-android/package.json")
