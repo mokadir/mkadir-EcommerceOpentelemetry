@@ -812,7 +812,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: flagd
-          image: 'mokadir/flagd-ui:latest'
+          image: 'ghcr.io/open-feature/flagd:v0.11.1'
           imagePullPolicy: IfNotPresent
           command:
             - /flagd-build
