@@ -40,7 +40,8 @@ pub async fn create_quote_from_count(count: u32) -> Result<Quote, tonic::Status>
 async fn request_quote(count: u32) -> Result<f64, Box<dyn std::error::Error>> {
     let quote_service_addr: String = format!(
         "{}{}",
-        env::var("QUOTE_ADDR")
+        env::var("QUOTE_SERVICE_ADDR")
+            .or_else(|_| env::var("QUOTE_ADDR"))
             .unwrap_or_else(|_| "http://quote:8090".to_string())
             .parse::<String>()
             .expect("Invalid quote service address"),

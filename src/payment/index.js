@@ -45,7 +45,9 @@ server.addService(health.service, new health.Implementation({
 
 server.addService(otelDemoPackage.oteldemo.PaymentService.service, { charge: chargeServiceHandler })
 
-server.bindAsync(`0.0.0.0:${process.env['PAYMENT_PORT']}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
+const paymentPort = process.env['PAYMENT_SERVICE_PORT'] || process.env['PAYMENT_PORT']
+
+server.bindAsync(`0.0.0.0:${paymentPort}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
   if (err) {
     return logger.error({ err })
   }

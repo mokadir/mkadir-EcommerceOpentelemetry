@@ -139,7 +139,7 @@ type checkout struct {
 
 func main() {
 	var port string
-	mustMapEnv(&port, "CHECKOUT_PORT")
+	mustMapEnvAny(&port, "CHECKOUT_SERVICE_PORT", "CHECKOUT_PORT")
 
 	tp := initTracerProvider()
 	defer func() {
@@ -167,37 +167,37 @@ func main() {
 
 	svc := new(checkout)
 
-	mustMapEnv(&svc.shippingSvcAddr, "SHIPPING_ADDR")
+	mustMapEnvAny(&svc.shippingSvcAddr, "SHIPPING_SERVICE_ADDR", "SHIPPING_ADDR")
 	c := mustCreateClient(svc.shippingSvcAddr)
 	svc.shippingSvcClient = pb.NewShippingServiceClient(c)
 	defer c.Close()
 
-	mustMapEnv(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_ADDR")
+	mustMapEnvAny(&svc.productCatalogSvcAddr, "PRODUCT_CATALOG_SERVICE_ADDR", "PRODUCT_CATALOG_ADDR")
 	c = mustCreateClient(svc.productCatalogSvcAddr)
 	svc.productCatalogSvcClient = pb.NewProductCatalogServiceClient(c)
 	defer c.Close()
 
-	mustMapEnv(&svc.cartSvcAddr, "CART_ADDR")
+	mustMapEnvAny(&svc.cartSvcAddr, "CART_SERVICE_ADDR", "CART_ADDR")
 	c = mustCreateClient(svc.cartSvcAddr)
 	svc.cartSvcClient = pb.NewCartServiceClient(c)
 	defer c.Close()
 
-	mustMapEnv(&svc.currencySvcAddr, "CURRENCY_ADDR")
+	mustMapEnvAny(&svc.currencySvcAddr, "CURRENCY_SERVICE_ADDR", "CURRENCY_ADDR")
 	c = mustCreateClient(svc.currencySvcAddr)
 	svc.currencySvcClient = pb.NewCurrencyServiceClient(c)
 	defer c.Close()
 
-	mustMapEnv(&svc.emailSvcAddr, "EMAIL_ADDR")
+	mustMapEnvAny(&svc.emailSvcAddr, "EMAIL_SERVICE_ADDR", "EMAIL_ADDR")
 	c = mustCreateClient(svc.emailSvcAddr)
 	svc.emailSvcClient = pb.NewEmailServiceClient(c)
 	defer c.Close()
 
-	mustMapEnv(&svc.paymentSvcAddr, "PAYMENT_ADDR")
+	mustMapEnvAny(&svc.paymentSvcAddr, "PAYMENT_SERVICE_ADDR", "PAYMENT_ADDR")
 	c = mustCreateClient(svc.paymentSvcAddr)
 	svc.paymentSvcClient = pb.NewPaymentServiceClient(c)
 	defer c.Close()
 
-	svc.kafkaBrokerSvcAddr = os.Getenv("KAFKA_ADDR")
+	svc.kafkaBrokerSvcAddr = envOrDefault("KAFKA_SERVICE_ADDR", os.Getenv("KAFKA_ADDR"))
 
 	if svc.kafkaBrokerSvcAddr != "" {
 		svc.KafkaProducerClient, err = kafka.CreateKafkaProducer([]string{svc.kafkaBrokerSvcAddr}, log)
@@ -229,6 +229,23 @@ func mustMapEnv(target *string, envKey string) {
 		panic(fmt.Sprintf("environment variable %q not set", envKey))
 	}
 	*target = v
+}
+
+func mustMapEnvAny(target *string, envKeys ...string) {
+	for _, envKey := range envKeys {
+		if v := os.Getenv(envKey); v != "" {
+			*target = v
+			return
+		}
+	}
+	panic(fmt.Sprintf("none of the environment variables are set: %v", envKeys))
+}
+
+func envOrDefault(envKey string, fallback string) string {
+	if value := os.Getenv(envKey); value != "" {
+		return value
+	}
+	return fallback
 }
 
 func (cs *checkout) Check(ctx context.Context, req *healthpb.HealthCheckRequest) (*healthpb.HealthCheckResponse, error) {

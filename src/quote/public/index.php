@@ -87,7 +87,8 @@ $server = new HttpServer(function (ServerRequestInterface $request) use ($app) {
 
     return $response;
 });
-$address = '0.0.0.0:' . getenv('QUOTE_PORT');
+$quotePort = getenv('QUOTE_SERVICE_PORT') ?: getenv('QUOTE_PORT');
+$address = '0.0.0.0:' . $quotePort;
 $socket = new SocketServer($address);
 $server->listen($socket);
 
