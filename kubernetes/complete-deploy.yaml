@@ -1540,7 +1540,11 @@ spec:
               value: cumulative
             - name: RECOMMENDATION_SERVICE_PORT
               value: "8080"
+            - name: RECOMMENDATION_PORT
+              value: "8080"
             - name: PRODUCT_CATALOG_SERVICE_ADDR
+              value: 'opentelemetry-demo-productcatalogservice:8080'
+            - name: PRODUCT_CATALOG_ADDR
               value: 'opentelemetry-demo-productcatalogservice:8080'
             - name: OTEL_PYTHON_LOG_CORRELATION
               value: "true"

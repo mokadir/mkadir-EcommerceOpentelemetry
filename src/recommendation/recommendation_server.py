@@ -120,6 +120,15 @@ def must_map_env(key: str):
     return value
 
 
+def must_map_env_any(*keys: str):
+    for key in keys:
+        value = os.environ.get(key)
+        if value is not None:
+            return value
+    joined_keys = ', '.join(keys)
+    raise Exception(f'One of these environment variables must be set: {joined_keys}')
+
+
 def check_feature_flag(flag_name: str):
     # Initialize OpenFeature
     client = api.get_client()
@@ -153,7 +162,7 @@ if __name__ == "__main__":
     logger = logging.getLogger('main')
     logger.addHandler(handler)
 
-    catalog_addr = must_map_env('PRODUCT_CATALOG_ADDR')
+    catalog_addr = must_map_env_any('PRODUCT_CATALOG_SERVICE_ADDR', 'PRODUCT_CATALOG_ADDR')
     pc_channel = grpc.insecure_channel(catalog_addr)
     product_catalog_stub = demo_pb2_grpc.ProductCatalogServiceStub(pc_channel)
 
@@ -166,7 +175,7 @@ if __name__ == "__main__":
     health_pb2_grpc.add_HealthServicer_to_server(service, server)
 
     # Start server
-    port = must_map_env('RECOMMENDATION_PORT')
+    port = must_map_env_any('RECOMMENDATION_SERVICE_PORT', 'RECOMMENDATION_PORT')
     server.add_insecure_port(f'[::]:{port}')
     server.start()
     logger.info(f'Recommendation service started, listening on port {port}')
