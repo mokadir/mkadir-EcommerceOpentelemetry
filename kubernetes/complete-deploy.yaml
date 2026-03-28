@@ -172,10 +172,11 @@ metadata:
     app.kubernetes.io/version: "1.12.0"
     app.kubernetes.io/part-of: opentelemetry-demo
 spec:
-  type: ClusterIP
+  type: NodePort
   ports:
-    - port: 8080
-      name: tcp-service
+    - name: tcp-service
+      nodePort: 30005
+      port: 8080
       targetPort: 8080
   selector:
     opentelemetry.io/name: opentelemetry-demo-frontendproxy
@@ -919,7 +920,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: frauddetectionservice
-          image: 'mokadir/frauddetection:latest'
+          image: 'mokadir/fraud-detection:latest'
           imagePullPolicy: IfNotPresent
           env:
             - name: OTEL_SERVICE_NAME
@@ -1071,7 +1072,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: frontendproxy
-          image: 'mokadir/frontendproxy:latest'
+          image: 'mokadir/frontend-proxy:latest'
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -1163,7 +1164,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: imageprovider
-          image: 'mokadir/imageprovider:latest'
+          image: 'mokadir/image-provider:latest'
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
@@ -1285,7 +1286,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: loadgenerator
-          image: 'mokadir/loadgenerator:latest'
+          image: 'mokadir/load-generator:latest'
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8089
@@ -1425,7 +1426,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: productcatalogservice
-          image: 'mokadir/productcatalog:latest'
+          image: 'mokadir/product-catalog:latest'
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
