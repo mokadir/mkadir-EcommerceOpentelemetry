@@ -17,7 +17,7 @@ WORKDIR /usr/src/app/
 COPY --from=builder /reqs /usr/local
 COPY ./src/load-generator/locustfile.py .
 COPY ./src/load-generator/people.json .
-ENV LOCUST_PLAYWRIGHT=1
 ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
+RUN python -m pip uninstall -y trio || true
 RUN playwright install --with-deps chromium
 ENTRYPOINT ["locust", "--skip-log-setup"]
